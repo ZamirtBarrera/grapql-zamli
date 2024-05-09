@@ -1,6 +1,7 @@
 const path = require('path');
 const Usuario = require('../models/Usuario');
 const Producto = require('../models/Producto');
+const Cliente = require('../models/Cliente')
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 require('dotenv').config({path: '.env'});
@@ -23,9 +24,27 @@ const resolvers = {
             const usuarioId = await jwt.verify(token, process.env.SECRETA);
 
             return usuarioId
+        },
+        obtenerProductos: async () => {
+            try{
+                const productos = await Producto.find({});
+                return productos;
+            } catch {
+                console.log(error);
+                throw new Error('Hubo un error');
+            }
+        },
+        obtenerProducto: async (_, { id }) => {
+            // Revisar si el producto existe
+            const producto = await Producto.findById(id);
+
+            if(!producto) {
+                throw new Error('El producto no existe');
+            }
+            return producto;
         }
     },
-
+    
     Mutation: {
         nuevoUsuario: async (_, { input }) => {
             const { email, password } = input;
@@ -81,10 +100,34 @@ const resolvers = {
 
                 return resultado;
             } catch (error){
-                console.log(error);
+                // console.log(error);
+                throw new Error('Error al guardar el producto');
             }
         },
+        actualizarProducto: async (_, {id, input}) => {
+            // Revisar si el producto existe
+            let producto = await Producto.findById(id);
+
+            if(!producto) {
+                throw new Error('El producto no existe');
+            }
+            // Guardar en la bd
+            producto = await Producto.findByIdAndUpdate({_id : id }, input, {new: true});
+            return producto;
+        },
+        eliminarProducto: async (_, {id}) => {
+            // Revisar si el producto existe
+            let producto = await Producto.findById(id);
+
+            if(!producto) {
+                throw new Error('El producto no existe');
+            }
+            // Eliminar producto
+            await Producto.findByIdAndDelete({_id : id });
+            return 'Producto eliminado';
+        }
     }
+    
 }
 
 module.exports = resolvers;

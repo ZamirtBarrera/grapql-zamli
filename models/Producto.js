@@ -6,7 +6,7 @@ const ProductosSchema = mongoose.Schema({
         required: true,
         trim: true
     },
-    existancia: {
+    existencia: { // Corregido: cambiado de 'existancia' a 'existencia'
         type: Number,
         required: true,
         trim: true
